@@ -40,8 +40,26 @@ async fn buy_pizza(body: Json<BuyPizzaRequest>, db: Data<Database>) -> impl Resp
 }
 
 #[patch("/update_pizza/{id}")]
-async fn update_pizza(id: Path<UpdatePizzaId>) -> impl Responder {
+async fn update_pizza(id: Path<UpdatePizzaId>, body: Json<UpdatePizzaId>,db: Data<Database>) -> impl Responder {
     let is_valid = id.into_inner().id;
+
+    let is_body_valid = body.validate();
+
+    match is_body_valid {
+        Ok(_) => {
+            if is_valid != body.id.clone() {
+                return HttpResponse::BadRequest().body("Id in path and body do not match");
+            }
+        
+            let pizza = db.update_pizza(body.into_inner()).await;
+        
+            match pizza {
+                Some(pizza) => HttpResponse::Ok().json(pizza),
+                None => HttpResponse::InternalServerError().finish(),
+            };
+        }
+        Err(e) => return HttpResponse::BadRequest().body(format!("Error: {}", e)),
+    }
 
     HttpResponse::Ok().body("Update pizza")
 }

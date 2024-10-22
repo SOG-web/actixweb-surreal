@@ -15,6 +15,8 @@ pub struct BuyPizzaRequest {
 pub struct UpdatePizzaId {
     #[validate(length(min = 1, message = "UUID is required"))]
     pub id: String,
+    #[validate(length(min = 1, message = "Name is required"))]
+    pub name: String,
 }
 
 #[derive(Validate, Serialize, Deserialize, Debug)]

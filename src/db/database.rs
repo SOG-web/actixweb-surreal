@@ -2,7 +2,7 @@ use surrealdb::engine::remote::ws::{Client, Ws};
 use surrealdb::opt::auth::Root;
 use surrealdb::{Error, Surreal};
 
-use crate::models::{BuyPizzaRequest, Pizza};
+use crate::models::{BuyPizzaRequest, Pizza, UpdatePizzaId};
 
 #[derive(Clone)]
 pub struct Database {
@@ -58,6 +58,20 @@ impl Database {
 
     pub async fn buy_pizza(&self, pizza: BuyPizzaRequest) -> Option<Pizza> {
         let result = self.surreal.create("pizza").content(pizza).await;
+
+        match result {
+            Ok(pizza) => pizza,
+            Err(e) => {
+                println!("Error: {}", e);
+                None
+            }
+        }
+    }
+
+    pub async fn update_pizza(&self, pizza: UpdatePizzaId) -> Option<Pizza> {
+        let result = self.surreal.update(("pizza", pizza.id)).content(BuyPizzaRequest {
+            name: pizza.name,
+        }).await;
 
         match result {
             Ok(pizza) => pizza,
